@@ -110,6 +110,29 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(doc[0][1][1][1][1][2], nodes.section)
         self.assertEqual('# Headings 7', doc[0][1][1][1][1][2][0].astext())
 
+    def test_setext_header(self):
+        markdown = u"""
+        Headings
+        --------
+
+        Hello world
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual(2, len(doc[0]))
+        self.assertIsInstance(doc[0][0], nodes.title)
+        self.assertEqual(1, len(doc[0][0]))
+        self.assertIsInstance(doc[0][0][0], nodes.Text)
+        self.assertEqual('Headings', doc[0][0][0])
+
+        self.assertIsInstance(doc[0][1], nodes.paragraph)
+        self.assertEqual(1, len(doc[0][1]))
+        self.assertIsInstance(doc[0][1][0], nodes.Text)
+        self.assertEqual('Hello world', doc[0][1][0])
+
     def test_bullet_list(self):
         markdown = u"""
         # Headings
