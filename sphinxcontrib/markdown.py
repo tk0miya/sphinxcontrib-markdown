@@ -44,6 +44,23 @@ class Serializer(object):
     def visit_p(self, element):
         return nodes.paragraph(text=element.text)
 
+    def visit_ul(self, element):
+        ul = nodes.bullet_list()
+        for child in element:
+            ul += self.visit(child)
+        return ul
+
+    def visit_ol(self, element):
+        ol = nodes.enumerated_list()
+        for child in element:
+            ol += self.visit(child)
+        return ol
+
+    def visit_li(self, element):
+        li = nodes.list_item()
+        li += nodes.Text(element.text)
+        return li
+
 
 def md2node(text):
     md = Markdown()
