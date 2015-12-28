@@ -3,25 +3,40 @@
 from __future__ import absolute_import
 
 from markdown import Markdown
+from markdown.odict import OrderedDict
 from docutils import nodes
 
 
-class OutputWrapper(object):
-    def __init__(self, nodes):
-        self.nodes = nodes
+class SectionPostprocessor(object):
+    def run(self, node):
+        i = 0
+        while i < len(node):
+            if isinstance(node[i], nodes.section):
+                for subnode in node[i + 1:]:
+                    if isinstance(subnode, nodes.section) and subnode['level'] == node[i]['level']:
+                        break
+                    node.remove(subnode)
+                    node[i] += subnode
 
-    def strip(self):
-        return self.nodes
+                self.run(node[i])
+
+            i += 1
+
+        return node
+
+
+class StripPostprocessor(object):
+    def run(self, node):
+        class FakeStripper(object):
+            def strip(self):
+                return node
+
+        return FakeStripper()
 
 
 class Serializer(object):
     def __call__(self, element):
-        if isinstance(element, list):
-            ret = [self.visit(child) for child in element]
-        else:
-            ret = self.visit(element)
-
-        return OutputWrapper(ret)
+        return self.visit(element)
 
     def visit(self, element):
         method = "visit_%s" % element.tag
@@ -37,8 +52,8 @@ class Serializer(object):
         return div
 
     def visit_headings(self, element):
-        section = nodes.section()
-        section += nodes.title(text=element.text, level=int(element.tag[1]))
+        section = nodes.section(level=int(element.tag[1]))
+        section += nodes.title(text=element.text)
         return section
 
     visit_h1 = visit_headings
@@ -73,5 +88,7 @@ def md2node(text):
     md = Markdown()
     md.serializer = Serializer()
     md.stripTopLevelTags = False
-    md.postprocessors = {}
+    md.postprocessors = OrderedDict()
+    md.postprocessors['section'] = SectionPostprocessor()
+    md.postprocessors['strip'] = StripPostprocessor()
     return md.convert(text)
