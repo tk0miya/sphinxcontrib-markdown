@@ -83,6 +83,9 @@ class Serializer(object):
         li += nodes.Text(element.text)
         return li
 
+    def visit_pre(self, element):
+        return nodes.literal_block(text=element[0].text)
+
 
 def md2node(text):
     md = Markdown()

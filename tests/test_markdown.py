@@ -186,3 +186,22 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual('Item 2', items[1].astext())
         self.assertIsInstance(items[2], nodes.list_item)
         self.assertEqual('Item 3', items[2].astext())
+
+    def test_codeblock(self):
+        markdown = u"""
+        # Headings
+
+        He says:
+
+            Hello world
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual('Headings', doc[0][0].astext())
+        self.assertEqual('He says:', doc[0][1].astext())
+
+        self.assertIsInstance(doc[0][2], nodes.literal_block)
+        self.assertEqual('Hello world\n', doc[0][2].astext())
