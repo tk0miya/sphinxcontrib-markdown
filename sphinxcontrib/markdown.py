@@ -81,6 +81,8 @@ class Serializer(object):
     def visit_li(self, element):
         li = nodes.list_item()
         li += nodes.Text(element.text)
+        for child in element:
+            li += self.visit(child)
         return li
 
     def visit_pre(self, element):
