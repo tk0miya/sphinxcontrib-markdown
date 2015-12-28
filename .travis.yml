@@ -1,0 +1,13 @@
+language: python
+env:
+  matrix:
+    - TOXENV=py26
+    - TOXENV=py27
+    - TOXENV=py33
+    - TOXENV=py34
+    - TOXENV=sphinx10
+    - TOXENV=sphinx11
+    - TOXENV=sphinx12
+    - TOXENV=coverage
+install: pip install docutils tox
+script: tox
