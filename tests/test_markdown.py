@@ -34,6 +34,35 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(doc[1][0], nodes.Text)
         self.assertEqual('Hello world', doc[1][0])
 
+    def test_deep_sections(self):
+        markdown = u"""
+        # Headings 1
+        ## Headings 2
+        ### Headings 3
+        #### Headings 4
+        ##### Headings 5
+        ###### Headings 6
+        ####### Headings 7
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(7, len(doc))
+
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual('Headings 1', doc[0].astext())
+        self.assertIsInstance(doc[1], nodes.section)
+        self.assertEqual('Headings 2', doc[1].astext())
+        self.assertIsInstance(doc[2], nodes.section)
+        self.assertEqual('Headings 3', doc[2].astext())
+        self.assertIsInstance(doc[3], nodes.section)
+        self.assertEqual('Headings 4', doc[3].astext())
+        self.assertIsInstance(doc[4], nodes.section)
+        self.assertEqual('Headings 5', doc[4].astext())
+        self.assertIsInstance(doc[5], nodes.section)
+        self.assertEqual('Headings 6', doc[5].astext())
+        self.assertIsInstance(doc[6], nodes.section)
+        self.assertEqual('# Headings 7', doc[6].astext())
+
     def test_bullet_list(self):
         markdown = u"""
         # Headings

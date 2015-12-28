@@ -36,10 +36,17 @@ class Serializer(object):
             div += self.visit(child)
         return div
 
-    def visit_h1(self, element):
+    def visit_headings(self, element):
         section = nodes.section()
-        section += nodes.title(text=element.text)
+        section += nodes.title(text=element.text, level=int(element.tag[1]))
         return section
+
+    visit_h1 = visit_headings
+    visit_h2 = visit_headings
+    visit_h3 = visit_headings
+    visit_h4 = visit_headings
+    visit_h5 = visit_headings
+    visit_h6 = visit_headings
 
     def visit_p(self, element):
         return nodes.paragraph(text=element.text)
