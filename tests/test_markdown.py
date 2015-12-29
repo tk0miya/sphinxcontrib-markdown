@@ -137,6 +137,123 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual(1, len(items[6]))
         self.assertEqual('stand-alone * or _ (not inline markups)', items[6][0])
 
+    def test_links(self):
+        markdown = u"""
+        # Headings
+
+        [Sphinx]: http://sphinx-doc.org/
+        [2]: /path/to/image.png
+        [3]: http://www.google.com/
+
+        * links:
+            * [text](url_1)
+            * [text](<url_2>)
+            * [Google](url_3 "title")
+        * images:
+            * ![alttxt](http://x.com/)
+            * ![alttxt](<http://x.com/>)
+        * references:
+            * [Google][3]
+            * [Sphinx]
+        * image reference: ![alt text][2]
+        * autolink:
+            * <http://www.123.com>
+            * <me@example.com>
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual(2, len(doc[0]))
+        self.assertEqual('Headings', doc[0][0].astext())
+        self.assertEqual(5, len(doc[0][1]))
+
+        # links:
+        #   * [text](url_1)
+        #   * [text](<url_2>)
+        #   * [Google](url_3 "title")
+        links = doc[0][1][0]
+        self.assertEqual('links:', links[0].astext())
+        items = links[1]
+        self.assertEqual(3, len(items))
+        self.assertEqual(1, len(items[0]))
+        self.assertIsInstance(items[0][0], nodes.reference)
+        self.assertEqual('url_1', items[0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0]))
+        self.assertEqual('text', items[0][0].astext())
+        self.assertEqual(1, len(items[1]))
+        self.assertIsInstance(items[1][0], nodes.reference)
+        self.assertEqual('url_2', items[1][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0]))
+        self.assertEqual('text', items[1][0].astext())
+        self.assertEqual(1, len(items[2]))
+        self.assertIsInstance(items[2][0], nodes.reference)
+        self.assertEqual('url_3', items[2][0].get('refuri'))
+        self.assertEqual(1, len(items[2][0]))
+        self.assertEqual('title', items[2][0].astext())
+
+        # images:
+        #   * ![alttxt](http://x.com/)
+        #   * ![alttxt](<http://x.com/>)
+        images = doc[0][1][1]
+        self.assertEqual('images:', images[0].astext())
+        items = images[1]
+        self.assertEqual(2, len(items))
+        self.assertEqual(1, len(items[0]))
+        self.assertIsInstance(items[0][0], nodes.image)
+        self.assertEqual('http://x.com/', items[0][0].get('uri'))
+        self.assertEqual('alttxt', items[0][0].get('alt'))
+        self.assertEqual(0, len(items[0][0]))
+        self.assertEqual(1, len(items[1]))
+        self.assertIsInstance(items[1][0], nodes.image)
+        self.assertEqual('http://x.com/', items[1][0].get('uri'))
+        self.assertEqual('alttxt', items[1][0].get('alt'))
+        self.assertEqual(0, len(items[1][0]))
+
+        # references:
+        #   * [Google][3]
+        #   * [Sphinx]
+        links = doc[0][1][2]
+        self.assertEqual('references:', links[0].astext())
+        items = links[1]
+        self.assertEqual(2, len(items))
+        self.assertEqual(1, len(items[0]))
+        self.assertIsInstance(items[0][0], nodes.reference)
+        self.assertEqual('http://www.google.com/', items[0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0]))
+        self.assertEqual('Google', items[0][0].astext())
+        self.assertEqual(1, len(items[1]))
+        self.assertIsInstance(items[1][0], nodes.reference)
+        self.assertEqual('http://sphinx-doc.org/', items[1][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0]))
+        self.assertEqual('Sphinx', items[1][0].astext())
+
+        # image reference: ![alt text][2]
+        imageref = doc[0][1][3]
+        self.assertEqual(2, len(imageref))
+        self.assertEqual('image reference: ', imageref[0])
+        self.assertIsInstance(imageref[1], nodes.image)
+        self.assertEqual('/path/to/image.png', imageref[1].get('uri'))
+        self.assertEqual('alt text', imageref[1].get('alt'))
+
+        # autolink:
+        #   * <http://www.123.com>
+        #   * <me@example.com>
+        links = doc[0][1][4]
+        self.assertEqual('autolink:', links[0].astext())
+        items = links[1]
+        self.assertEqual(2, len(items))
+        self.assertEqual(1, len(items[0]))
+        self.assertIsInstance(items[0][0], nodes.reference)
+        self.assertEqual('http://www.123.com', items[0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0]))
+        self.assertEqual('http://www.123.com', items[0][0].astext())
+        self.assertEqual(1, len(items[1]))
+        self.assertIsInstance(items[1][0], nodes.reference)
+        self.assertEqual('mailto:me@example.com', items[1][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0]))
+        self.assertEqual('me@example.com', items[1][0].astext())
+
     def test_multiple_sections(self):
         markdown = u"""
         # Headings 1

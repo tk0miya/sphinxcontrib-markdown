@@ -4,8 +4,17 @@ from __future__ import absolute_import
 
 import re
 from markdown import Markdown
+from markdown.util import AMP_SUBSTITUTE
 from markdown.odict import OrderedDict
 from docutils import nodes
+
+try:
+    from html import entities
+except ImportError:
+    import htmlentitydefs as entities
+
+MAILTO = ('\x02amp\x03#109;\x02amp\x03#97;\x02amp\x03#105;\x02amp\x03#108;'
+          '\x02amp\x03#116;\x02amp\x03#111;\x02amp\x03#58;\x02')
 
 
 class SectionPostprocessor(object):
@@ -38,6 +47,19 @@ class StripPostprocessor(object):
 def unescape_char(text):
     unescape = lambda x: chr(int(x.group(1)))
     return re.sub('\x02(\d\d)\x03', unescape, text)
+
+
+def unescape_email(text):
+    result = []
+    n = len(AMP_SUBSTITUTE)
+    for char in text.split(';'):
+        if char.startswith(AMP_SUBSTITUTE + "#"):
+            result.append(chr(int(char[n + 1:])))
+        elif char.startswith(AMP_SUBSTITUTE):
+            result.append(entities.name2codepoint.get(char[n:]))
+        else:
+            result.append(char)
+    return ''.join(result)
 
 
 class Serializer(object):
@@ -88,6 +110,30 @@ class Serializer(object):
 
     def visit_code(self, element):
         return nodes.literal(text=unescape_char(element.text))
+
+    def visit_a(self, element):
+        refnode = self.make_node(nodes.reference, element)
+        href = element.get('href')
+        if href:
+            if href.startswith(MAILTO):
+                refnode['refuri'] = unescape_email(href)
+                if href.endswith(refnode[0]):
+                    refnode.pop(0)
+                    refnode.insert(0, nodes.Text(refnode['refuri'][7:]))  # strip mailto:
+            else:
+                refnode['refuri'] = href
+        if element.get('title'):
+            refnode.pop(0)
+            refnode.insert(0, nodes.Text(unescape_char(element.get('title'))))
+        return refnode
+
+    def visit_img(self, element):
+        image = self.make_node(nodes.image, element)
+        if element.get('alt'):
+            image['alt'] = unescape_char(element.get('alt'))
+        if element.get('src'):
+            image['uri'] = unescape_char(element.get('src'))
+        return image
 
     def visit_ul(self, element):
         return self.make_node(nodes.bullet_list, element)
