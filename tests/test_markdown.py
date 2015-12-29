@@ -34,6 +34,42 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(doc[0][1][0], nodes.Text)
         self.assertEqual('Hello world', doc[0][1][0])
 
+    def test_inline(self):
+        markdown = u"""
+        # Headings with *emphasis* text
+
+        Hello **strong** and `code` world
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual(2, len(doc[0]))
+
+        section_title = doc[0][0]
+        self.assertIsInstance(section_title, nodes.title)
+        self.assertEqual(3, len(section_title))
+        self.assertIsInstance(section_title[0], nodes.Text)
+        self.assertEqual('Headings with ', section_title[0])
+        self.assertIsInstance(section_title[1], nodes.emphasis)
+        self.assertEqual('emphasis', section_title[1].astext())
+        self.assertIsInstance(section_title[2], nodes.Text)
+        self.assertEqual(' text', section_title[2])
+
+        paragraph = doc[0][1]
+        self.assertIsInstance(paragraph, nodes.paragraph)
+        self.assertEqual(5, len(paragraph))
+        self.assertIsInstance(paragraph[0], nodes.Text)
+        self.assertEqual('Hello ', paragraph[0])
+        self.assertIsInstance(paragraph[1], nodes.strong)
+        self.assertEqual('strong', paragraph[1].astext())
+        self.assertIsInstance(paragraph[2], nodes.Text)
+        self.assertEqual(' and ', paragraph[2])
+        self.assertIsInstance(paragraph[3], nodes.literal)
+        self.assertEqual('code', paragraph[3].astext())
+        self.assertIsInstance(paragraph[4], nodes.Text)
+        self.assertEqual(' world', paragraph[4])
+
     def test_multiple_sections(self):
         markdown = u"""
         # Headings 1

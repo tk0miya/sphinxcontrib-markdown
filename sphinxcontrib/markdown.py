@@ -49,11 +49,19 @@ class Serializer(object):
         div = nodes.container()
         for child in element:
             div += self.visit(child)
+            if child.tail and child.tail != "\n":
+                div += nodes.Text(child.tail)
         return div
 
     def visit_headings(self, element):
         section = nodes.section(level=int(element.tag[1]))
-        section += nodes.title(text=element.text)
+        section += nodes.title()
+        if element.text:
+            section[0] += nodes.Text(element.text)
+        for child in element:
+            section[0] += self.visit(child)
+            if child.tail and child.tail != "\n":
+                section[0] += nodes.Text(child.tail)
         return section
 
     visit_h1 = visit_headings
@@ -64,7 +72,23 @@ class Serializer(object):
     visit_h6 = visit_headings
 
     def visit_p(self, element):
-        return nodes.paragraph(text=element.text)
+        p = nodes.paragraph()
+        if element.text:
+            p += nodes.Text(element.text)
+        for child in element:
+            p += self.visit(child)
+            if child.tail and child.tail != "\n":
+                p += nodes.Text(child.tail)
+        return p
+
+    def visit_em(self, element):
+        return nodes.emphasis(text=element.text)
+
+    def visit_strong(self, element):
+        return nodes.strong(text=element.text)
+
+    def visit_code(self, element):
+        return nodes.literal(text=element.text)
 
     def visit_ul(self, element):
         ul = nodes.bullet_list()
@@ -83,6 +107,8 @@ class Serializer(object):
         li += nodes.Text(element.text)
         for child in element:
             li += self.visit(child)
+            if child.tail and child.tail != "\n":
+                li += nodes.Text(child.tail)
         return li
 
     def visit_pre(self, element):
