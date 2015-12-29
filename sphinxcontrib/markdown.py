@@ -4,7 +4,7 @@ from __future__ import absolute_import
 
 import re
 from markdown import Markdown
-from markdown.util import AMP_SUBSTITUTE
+from markdown.util import AMP_SUBSTITUTE, HTML_PLACEHOLDER_RE
 from markdown.odict import OrderedDict
 from docutils import nodes
 
@@ -44,11 +44,6 @@ class StripPostprocessor(object):
         return FakeStripper()
 
 
-def unescape_char(text):
-    unescape = lambda x: chr(int(x.group(1)))
-    return re.sub('\x02(\d\d)\x03', unescape, text)
-
-
 def unescape_email(text):
     result = []
     n = len(AMP_SUBSTITUTE)
@@ -63,6 +58,9 @@ def unescape_email(text):
 
 
 class Serializer(object):
+    def __init__(self, markdown):
+        self.markdown = markdown
+
     def __call__(self, element):
         return self.visit(element)
 
@@ -73,14 +71,38 @@ class Serializer(object):
         else:
             return getattr(self, method)(element)
 
+    def unescape_char(self, text, rawHtml=False):
+        def unescape(matched):
+            return chr(int(matched.group(1)))
+
+        def expand_rawhtml(matched):
+            html_id = int(matched.group(1))
+            html, safe = self.markdown.htmlStash.rawHtmlBlocks[html_id]
+            if rawHtml or re.match(r'(&[\#a-zA-Z0-9]*;)', html):
+                return html  # unescape HTML entities only
+            else:
+                return matched.group(0)
+
+        text = re.sub('\x02(\d\d)\x03', unescape, text)
+        text = HTML_PLACEHOLDER_RE.sub(expand_rawhtml, text)
+        return text
+
     def make_node(self, cls, element):
         node = cls()
         if element.text and element.text != "\n":
-            node += nodes.Text(unescape_char(element.text))
+            text = self.unescape_char(element.text)
+            if HTML_PLACEHOLDER_RE.search(text):
+                node += nodes.raw(format='html', text=self.unescape_char(text, rawHtml=True))
+            else:
+                node += nodes.Text(text)
         for child in element:
             node += self.visit(child)
             if child.tail and child.tail != "\n":
-                node += nodes.Text(unescape_char(child.tail))
+                tail = self.unescape_char(child.tail)
+                if HTML_PLACEHOLDER_RE.search(tail):
+                    node += nodes.raw(format='html', text=tail)
+                else:
+                    node += nodes.Text(tail)
 
         return node
 
@@ -109,7 +131,7 @@ class Serializer(object):
         return self.make_node(nodes.strong, element)
 
     def visit_code(self, element):
-        return nodes.literal(text=unescape_char(element.text))
+        return nodes.literal(text=self.unescape_char(element.text))
 
     def visit_a(self, element):
         refnode = self.make_node(nodes.reference, element)
@@ -124,15 +146,15 @@ class Serializer(object):
                 refnode['refuri'] = href
         if element.get('title'):
             refnode.pop(0)
-            refnode.insert(0, nodes.Text(unescape_char(element.get('title'))))
+            refnode.insert(0, nodes.Text(self.unescape_char(element.get('title'))))
         return refnode
 
     def visit_img(self, element):
         image = self.make_node(nodes.image, element)
         if element.get('alt'):
-            image['alt'] = unescape_char(element.get('alt'))
+            image['alt'] = self.unescape_char(element.get('alt'))
         if element.get('src'):
-            image['uri'] = unescape_char(element.get('src'))
+            image['uri'] = self.unescape_char(element.get('src'))
         return image
 
     def visit_ul(self, element):
@@ -145,15 +167,15 @@ class Serializer(object):
         return self.make_node(nodes.list_item, element)
 
     def visit_pre(self, element):
-        return nodes.literal_block(text=unescape_char(element[0].text))
+        return nodes.literal_block(text=self.unescape_char(element[0].text))
 
     def visit_blockquote(self, element):
-        return nodes.literal_block(text=unescape_char(element[0].text))
+        return nodes.literal_block(text=self.unescape_char(element[0].text))
 
 
 def md2node(text):
     md = Markdown()
-    md.serializer = Serializer()
+    md.serializer = Serializer(md)
     md.stripTopLevelTags = False
     md.postprocessors = OrderedDict()
     md.postprocessors['section'] = SectionPostprocessor()

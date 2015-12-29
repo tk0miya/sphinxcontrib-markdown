@@ -254,6 +254,61 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual(1, len(items[1][0]))
         self.assertEqual('me@example.com', items[1][0].astext())
 
+    def test_html(self):
+        markdown = u"""
+        # Headings
+
+        * HTML Entities:
+            * &amp;
+            * &quot;
+            * &lt;
+            * &gt;
+            * &nbsp;
+            * &#9999;
+        * inline HTML:
+            * <span>hello world</span>
+            * hello <em>Sphinx</em> world
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual(2, len(doc[0]))
+        self.assertEqual('Headings', doc[0][0].astext())
+        self.assertEqual(2, len(doc[0][1]))
+
+        # HTML Entities:
+        #   * &amp;
+        #   * &quot;
+        #   * &lt;
+        #   * &gt;
+        #   * &nbsp;
+        #   * &#9999;
+        entities = doc[0][1][0]
+        self.assertEqual('HTML Entities:', entities[0])
+        items = entities[1]
+        self.assertEqual(6, len(items))
+        self.assertEqual('&amp;', items[0][0])
+        self.assertEqual('&quot;', items[1][0])
+        self.assertEqual('&lt;', items[2][0])
+        self.assertEqual('&gt;', items[3][0])
+        self.assertEqual('&nbsp;', items[4][0])
+        self.assertEqual('&#9999;', items[5][0])
+
+        # inline HTML:
+        #   * <span>hello world</span>
+        #   * hello <em>Sphinx</em> world
+        inline_html = doc[0][1][1]
+        self.assertEqual('inline HTML:', inline_html[0])
+        items = inline_html[1]
+        self.assertEqual(2, len(items))
+        self.assertIsInstance(items[0][0], nodes.raw)
+        self.assertEqual('html', items[0][0]['format'])
+        self.assertEqual('<span>hello world</span>', items[0][0][0])
+        self.assertIsInstance(items[1][0], nodes.raw)
+        self.assertEqual('html', items[1][0]['format'])
+        self.assertEqual('hello <em>Sphinx</em> world', items[1][0][0])
+
     def test_multiple_sections(self):
         markdown = u"""
         # Headings 1
