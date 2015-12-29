@@ -39,13 +39,22 @@ class TestSphinxcontrib(unittest.TestCase):
         # Headings with *emphasis* text
 
         Hello **strong** and `code` world
+
+        * backticks: `e=f()` or ``e=f("`")``
+        * escapes: \*hello world*
+        * strong-em: ***strongem*** or ***em*strong**
+        * em-strong: ***strong**em*
+        * smart em: _smart_emphasis_
+        * yet another em: _emphasis_
+        * stand-alone * or _ (not inline markups)
         """
         doc = md2node(dedent(markdown))
         self.assertIsInstance(doc, nodes.container)
         self.assertEqual(1, len(doc))
         self.assertIsInstance(doc[0], nodes.section)
-        self.assertEqual(2, len(doc[0]))
+        self.assertEqual(3, len(doc[0]))
 
+        # Headings with *emphasis* text
         section_title = doc[0][0]
         self.assertIsInstance(section_title, nodes.title)
         self.assertEqual(3, len(section_title))
@@ -56,6 +65,7 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(section_title[2], nodes.Text)
         self.assertEqual(' text', section_title[2])
 
+        # Hello **strong** and `code` world
         paragraph = doc[0][1]
         self.assertIsInstance(paragraph, nodes.paragraph)
         self.assertEqual(5, len(paragraph))
@@ -69,6 +79,63 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual('code', paragraph[3].astext())
         self.assertIsInstance(paragraph[4], nodes.Text)
         self.assertEqual(' world', paragraph[4])
+
+        items = doc[0][2]
+        self.assertIsInstance(items, nodes.bullet_list)
+        self.assertEqual(7, len(items))
+
+        # backticks: `e=f()` or ``e=f("`")``
+        self.assertEqual(4, len(items[0]))
+        self.assertEqual('backticks: ', items[0][0])
+        self.assertIsInstance(items[0][1], nodes.literal)
+        self.assertEqual('e=f()', items[0][1][0])
+        self.assertIsInstance(items[0][2], nodes.Text)
+        self.assertEqual(' or ', items[0][2])
+        self.assertIsInstance(items[0][3], nodes.literal)
+        self.assertEqual('e=f("`")', items[0][3][0])
+
+        # escapes: \*hello world*
+        self.assertEqual(1, len(items[1]))
+        self.assertEqual('escapes: *hello world*', items[1][0])
+
+        # strong-em: ***strongem*** or ***em*strong**
+        self.assertEqual(4, len(items[2]))
+        self.assertEqual('strong-em: ', items[2][0])
+        self.assertIsInstance(items[2][1], nodes.strong)
+        self.assertIsInstance(items[2][1][0], nodes.emphasis)
+        self.assertEqual('strongem', items[2][1][0][0])
+        self.assertIsInstance(items[2][2], nodes.Text)
+        self.assertEqual(' or ', items[2][2])
+        self.assertIsInstance(items[2][3], nodes.strong)
+        self.assertIsInstance(items[2][3][0], nodes.emphasis)
+        self.assertEqual('em', items[2][3][0][0])
+        self.assertIsInstance(items[2][3][1], nodes.Text)
+        self.assertEqual('strong', items[2][3][1])
+
+        # em-strong: ***strong**em*
+        self.assertEqual(2, len(items[3]))
+        self.assertEqual('em-strong: ', items[3][0])
+        self.assertIsInstance(items[3][1], nodes.emphasis)
+        self.assertIsInstance(items[3][1][0], nodes.strong)
+        self.assertEqual('strong', items[3][1][0][0])
+        self.assertIsInstance(items[3][1][1], nodes.Text)
+        self.assertEqual('em', items[3][1][1])
+
+        # smart em: _smart_emphasis_
+        self.assertEqual(2, len(items[4]))
+        self.assertEqual('smart em: ', items[4][0])
+        self.assertIsInstance(items[4][1], nodes.emphasis)
+        self.assertEqual('smart_emphasis', items[4][1][0])
+
+        # yet another em: _emphasis_
+        self.assertEqual(2, len(items[5]))
+        self.assertEqual('yet another em: ', items[5][0])
+        self.assertIsInstance(items[5][1], nodes.emphasis)
+        self.assertEqual('emphasis', items[5][1][0])
+
+        # stand-alone * or _ (not inline markups)
+        self.assertEqual(1, len(items[6]))
+        self.assertEqual('stand-alone * or _ (not inline markups)', items[6][0])
 
     def test_multiple_sections(self):
         markdown = u"""

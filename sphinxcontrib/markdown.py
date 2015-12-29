@@ -2,6 +2,7 @@
 
 from __future__ import absolute_import
 
+import re
 from markdown import Markdown
 from markdown.odict import OrderedDict
 from docutils import nodes
@@ -34,6 +35,11 @@ class StripPostprocessor(object):
         return FakeStripper()
 
 
+def unescape_char(text):
+    unescape = lambda x: chr(int(x.group(1)))
+    return re.sub('\x02(\d\d)\x03', unescape, text)
+
+
 class Serializer(object):
     def __call__(self, element):
         return self.visit(element)
@@ -48,11 +54,11 @@ class Serializer(object):
     def make_node(self, cls, element):
         node = cls()
         if element.text and element.text != "\n":
-            node += nodes.Text(element.text)
+            node += nodes.Text(unescape_char(element.text))
         for child in element:
             node += self.visit(child)
             if child.tail and child.tail != "\n":
-                node += nodes.Text(child.tail)
+                node += nodes.Text(unescape_char(child.tail))
 
         return node
 
@@ -75,13 +81,13 @@ class Serializer(object):
         return self.make_node(nodes.paragraph, element)
 
     def visit_em(self, element):
-        return nodes.emphasis(text=element.text)
+        return self.make_node(nodes.emphasis, element)
 
     def visit_strong(self, element):
-        return nodes.strong(text=element.text)
+        return self.make_node(nodes.strong, element)
 
     def visit_code(self, element):
-        return nodes.literal(text=element.text)
+        return nodes.literal(text=unescape_char(element.text))
 
     def visit_ul(self, element):
         return self.make_node(nodes.bullet_list, element)
@@ -93,10 +99,10 @@ class Serializer(object):
         return self.make_node(nodes.list_item, element)
 
     def visit_pre(self, element):
-        return nodes.literal_block(text=element[0].text)
+        return nodes.literal_block(text=unescape_char(element[0].text))
 
     def visit_blockquote(self, element):
-        return nodes.literal_block(text=element[0].text)
+        return nodes.literal_block(text=unescape_char(element[0].text))
 
 
 def md2node(text):
