@@ -45,23 +45,23 @@ class Serializer(object):
         else:
             return getattr(self, method)(element)
 
-    def visit_div(self, element):
-        div = nodes.container()
+    def make_node(self, cls, element):
+        node = cls()
+        if element.text and element.text != "\n":
+            node += nodes.Text(element.text)
         for child in element:
-            div += self.visit(child)
+            node += self.visit(child)
             if child.tail and child.tail != "\n":
-                div += nodes.Text(child.tail)
-        return div
+                node += nodes.Text(child.tail)
+
+        return node
+
+    def visit_div(self, element):
+        return self.make_node(nodes.container, element)
 
     def visit_headings(self, element):
         section = nodes.section(level=int(element.tag[1]))
-        section += nodes.title()
-        if element.text:
-            section[0] += nodes.Text(element.text)
-        for child in element:
-            section[0] += self.visit(child)
-            if child.tail and child.tail != "\n":
-                section[0] += nodes.Text(child.tail)
+        section += self.make_node(nodes.title, element)
         return section
 
     visit_h1 = visit_headings
@@ -72,14 +72,7 @@ class Serializer(object):
     visit_h6 = visit_headings
 
     def visit_p(self, element):
-        p = nodes.paragraph()
-        if element.text:
-            p += nodes.Text(element.text)
-        for child in element:
-            p += self.visit(child)
-            if child.tail and child.tail != "\n":
-                p += nodes.Text(child.tail)
-        return p
+        return self.make_node(nodes.paragraph, element)
 
     def visit_em(self, element):
         return nodes.emphasis(text=element.text)
@@ -91,25 +84,13 @@ class Serializer(object):
         return nodes.literal(text=element.text)
 
     def visit_ul(self, element):
-        ul = nodes.bullet_list()
-        for child in element:
-            ul += self.visit(child)
-        return ul
+        return self.make_node(nodes.bullet_list, element)
 
     def visit_ol(self, element):
-        ol = nodes.enumerated_list()
-        for child in element:
-            ol += self.visit(child)
-        return ol
+        return self.make_node(nodes.enumerated_list, element)
 
     def visit_li(self, element):
-        li = nodes.list_item()
-        li += nodes.Text(element.text)
-        for child in element:
-            li += self.visit(child)
-            if child.tail and child.tail != "\n":
-                li += nodes.Text(child.tail)
-        return li
+        return self.make_node(nodes.list_item, element)
 
     def visit_pre(self, element):
         return nodes.literal_block(text=element[0].text)
