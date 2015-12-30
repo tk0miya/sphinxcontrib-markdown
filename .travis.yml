@@ -1,9 +1,11 @@
 language: python
+python: 3.5
 env:
   matrix:
     - TOXENV=py27
     - TOXENV=py33
     - TOXENV=py34
+    - TOXENV=py35
     - TOXENV=coverage
 install: pip install docutils tox
 script: tox
