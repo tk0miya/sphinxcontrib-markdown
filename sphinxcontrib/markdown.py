@@ -170,7 +170,7 @@ class Serializer(object):
         return nodes.literal_block(text=self.unescape_char(element[0].text))
 
     def visit_blockquote(self, element):
-        return nodes.literal_block(text=self.unescape_char(element[0].text))
+        return self.make_node(nodes.literal_block, element)
 
 
 def md2node(text):
