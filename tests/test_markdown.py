@@ -3,6 +3,7 @@
 import sys
 from docutils import nodes
 from textwrap import dedent
+from sphinx_testing import with_app
 from sphinxcontrib.markdown import md2node
 
 if sys.version_info < (2, 7):
@@ -572,3 +573,8 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual('beautiful', quote[2][0][1][0])
         self.assertIsInstance(quote[2][0][2], nodes.Text)
         self.assertEqual(' world"', quote[2][0][2])
+
+    @with_app(buildername='html', srcdir="tests/examples/basic", copy_srcdir_to_tmpdir=True)
+    def test_parser(self, app, status, warnings):
+        app.build()
+        self.assertEqual('', warnings.getvalue())

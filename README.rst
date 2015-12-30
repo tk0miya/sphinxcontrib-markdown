@@ -16,9 +16,8 @@ Install
 Configure Sphinx
 ----------------
 
-Add ``sphinxcontrib.markdown`` to ``extensions`` at `conf.py`::
+Add ``.md`` to ``source_suffix`` and parser class to ``source_parsers`` in your ``conf.py``::
 
-   extensions += ['sphinxcontrib.markdown']
    source_suffix = ['.rst', '.md']
    source_parsers = {
        '.md': 'sphinxcontrib.markdown.MarkdownParser'

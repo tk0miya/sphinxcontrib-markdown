@@ -7,6 +7,7 @@ from markdown import Markdown
 from markdown.util import AMP_SUBSTITUTE, HTML_PLACEHOLDER_RE
 from markdown.odict import OrderedDict
 from docutils import nodes
+from docutils import parsers
 
 try:
     from html import entities
@@ -207,3 +208,16 @@ def md2node(text):
     md.postprocessors['section'] = SectionPostprocessor()
     md.postprocessors['strip'] = StripPostprocessor()
     return md.convert(text)
+
+
+class MarkdownParser(parsers.Parser):
+    def parse(self, inputstring, document):
+        self.setup_parse(inputstring, document)
+        self.document = document
+        for node in md2node(inputstring):
+            self.document += node
+
+        # assign IDs to all sections
+        for node in self.document.traverse(nodes.section):
+            self.document.note_implicit_target(node)
+        self.finish_parse()
