@@ -524,7 +524,7 @@ class TestSphinxcontrib(unittest.TestCase):
         >
         >She wrote:
         >
-        >>Hello world
+        >>Hello "this *beautiful* world"
         """
         doc = md2node(dedent(markdown))
         self.assertIsInstance(doc, nodes.container)
@@ -542,4 +542,9 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual('She wrote:', quote[1].astext())
         self.assertIsInstance(quote[2], nodes.literal_block)
         self.assertIsInstance(quote[2][0], nodes.paragraph)
-        self.assertEqual('Hello world', quote[2][0].astext())
+        self.assertIsInstance(quote[2][0][0], nodes.Text)
+        self.assertEqual('Hello "this ', quote[2][0][0])
+        self.assertIsInstance(quote[2][0][1], nodes.emphasis)
+        self.assertEqual('beautiful', quote[2][0][1][0])
+        self.assertIsInstance(quote[2][0][2], nodes.Text)
+        self.assertEqual(' world"', quote[2][0][2])
