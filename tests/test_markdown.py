@@ -85,57 +85,77 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual(7, len(items))
 
         # backticks: `e=f()` or ``e=f("`")``
-        self.assertEqual(4, len(items[0]))
-        self.assertEqual('backticks: ', items[0][0])
-        self.assertIsInstance(items[0][1], nodes.literal)
-        self.assertEqual('e=f()', items[0][1][0])
-        self.assertIsInstance(items[0][2], nodes.Text)
-        self.assertEqual(' or ', items[0][2])
-        self.assertIsInstance(items[0][3], nodes.literal)
-        self.assertEqual('e=f("`")', items[0][3][0])
+        backticks = items[0][0]
+        self.assertIsInstance(backticks, nodes.paragraph)
+        self.assertEqual(4, len(backticks))
+        self.assertEqual('backticks: ', backticks[0])
+        self.assertIsInstance(backticks[1], nodes.literal)
+        self.assertEqual('e=f()', backticks[1][0])
+        self.assertIsInstance(backticks[2], nodes.Text)
+        self.assertEqual(' or ', backticks[2])
+        self.assertIsInstance(backticks[3], nodes.literal)
+        self.assertEqual('e=f("`")', backticks[3][0])
 
         # escapes: \*hello world*
-        self.assertEqual(1, len(items[1]))
-        self.assertEqual('escapes: *hello world*', items[1][0])
+        escapes = items[1][0]
+        self.assertIsInstance(escapes, nodes.paragraph)
+        self.assertEqual(1, len(escapes))
+        self.assertIsInstance(escapes[0], nodes.Text)
+        self.assertEqual('escapes: *hello world*', escapes[0])
 
         # strong-em: ***strongem*** or ***em*strong**
-        self.assertEqual(4, len(items[2]))
-        self.assertEqual('strong-em: ', items[2][0])
-        self.assertIsInstance(items[2][1], nodes.strong)
-        self.assertIsInstance(items[2][1][0], nodes.emphasis)
-        self.assertEqual('strongem', items[2][1][0][0])
-        self.assertIsInstance(items[2][2], nodes.Text)
-        self.assertEqual(' or ', items[2][2])
-        self.assertIsInstance(items[2][3], nodes.strong)
-        self.assertIsInstance(items[2][3][0], nodes.emphasis)
-        self.assertEqual('em', items[2][3][0][0])
-        self.assertIsInstance(items[2][3][1], nodes.Text)
-        self.assertEqual('strong', items[2][3][1])
+        strongem = items[2][0]
+        self.assertIsInstance(strongem, nodes.paragraph)
+        self.assertEqual(4, len(strongem))
+        self.assertIsInstance(strongem[0], nodes.Text)
+        self.assertEqual('strong-em: ', strongem[0])
+        self.assertIsInstance(strongem[1], nodes.strong)
+        self.assertIsInstance(strongem[1][0], nodes.emphasis)
+        self.assertEqual('strongem', strongem[1][0][0])
+        self.assertIsInstance(strongem[2], nodes.Text)
+        self.assertEqual(' or ', strongem[2])
+        self.assertIsInstance(strongem[3], nodes.strong)
+        self.assertIsInstance(strongem[3][0], nodes.emphasis)
+        self.assertEqual('em', strongem[3][0][0])
+        self.assertIsInstance(strongem[3][1], nodes.Text)
+        self.assertEqual('strong', strongem[3][1])
 
         # em-strong: ***strong**em*
-        self.assertEqual(2, len(items[3]))
-        self.assertEqual('em-strong: ', items[3][0])
-        self.assertIsInstance(items[3][1], nodes.emphasis)
-        self.assertIsInstance(items[3][1][0], nodes.strong)
-        self.assertEqual('strong', items[3][1][0][0])
-        self.assertIsInstance(items[3][1][1], nodes.Text)
-        self.assertEqual('em', items[3][1][1])
+        emstrong = items[3][0]
+        self.assertIsInstance(emstrong, nodes.paragraph)
+        self.assertEqual(2, len(emstrong))
+        self.assertIsInstance(emstrong[0], nodes.Text)
+        self.assertEqual('em-strong: ', emstrong[0])
+        self.assertIsInstance(emstrong[1], nodes.emphasis)
+        self.assertIsInstance(emstrong[1][0], nodes.strong)
+        self.assertEqual('strong', emstrong[1][0][0])
+        self.assertIsInstance(emstrong[1][1], nodes.Text)
+        self.assertEqual('em', emstrong[1][1])
 
         # smart em: _smart_emphasis_
-        self.assertEqual(2, len(items[4]))
-        self.assertEqual('smart em: ', items[4][0])
-        self.assertIsInstance(items[4][1], nodes.emphasis)
-        self.assertEqual('smart_emphasis', items[4][1][0])
+        smartem = items[4][0]
+        self.assertIsInstance(smartem, nodes.paragraph)
+        self.assertEqual(2, len(smartem))
+        self.assertIsInstance(smartem[0], nodes.Text)
+        self.assertEqual('smart em: ', smartem[0])
+        self.assertIsInstance(smartem[1], nodes.emphasis)
+        self.assertEqual('smart_emphasis', smartem[1][0])
 
         # yet another em: _emphasis_
-        self.assertEqual(2, len(items[5]))
-        self.assertEqual('yet another em: ', items[5][0])
-        self.assertIsInstance(items[5][1], nodes.emphasis)
-        self.assertEqual('emphasis', items[5][1][0])
+        another_em = items[5][0]
+        self.assertIsInstance(another_em, nodes.paragraph)
+        self.assertEqual(2, len(another_em))
+        self.assertIsInstance(another_em[0], nodes.Text)
+        self.assertEqual('yet another em: ', another_em[0])
+        self.assertIsInstance(another_em[1], nodes.emphasis)
+        self.assertEqual('emphasis', another_em[1][0])
 
         # stand-alone * or _ (not inline markups)
-        self.assertEqual(1, len(items[6]))
-        self.assertEqual('stand-alone * or _ (not inline markups)', items[6][0])
+        standalone = items[6][0]
+        self.assertIsInstance(standalone, nodes.paragraph)
+        self.assertEqual(1, len(standalone))
+        self.assertIsInstance(standalone[0], nodes.Text)
+        self.assertEqual('stand-alone * or _ (not inline markups)', standalone[0])
 
     def test_links(self):
         markdown = u"""
@@ -177,20 +197,20 @@ class TestSphinxcontrib(unittest.TestCase):
         items = links[1]
         self.assertEqual(3, len(items))
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.reference)
-        self.assertEqual('url_1', items[0][0].get('refuri'))
-        self.assertEqual(1, len(items[0][0]))
-        self.assertEqual('text', items[0][0].astext())
-        self.assertEqual(1, len(items[1]))
-        self.assertIsInstance(items[1][0], nodes.reference)
-        self.assertEqual('url_2', items[1][0].get('refuri'))
+        self.assertIsInstance(items[0][0][0], nodes.reference)
+        self.assertEqual('url_1', items[0][0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0][0]))
+        self.assertEqual('text', items[0][0][0].astext())
         self.assertEqual(1, len(items[1][0]))
-        self.assertEqual('text', items[1][0].astext())
-        self.assertEqual(1, len(items[2]))
-        self.assertIsInstance(items[2][0], nodes.reference)
-        self.assertEqual('url_3', items[2][0].get('refuri'))
+        self.assertIsInstance(items[1][0][0], nodes.reference)
+        self.assertEqual('url_2', items[1][0][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0][0]))
+        self.assertEqual('text', items[1][0][0].astext())
         self.assertEqual(1, len(items[2][0]))
-        self.assertEqual('title', items[2][0].astext())
+        self.assertIsInstance(items[2][0][0], nodes.reference)
+        self.assertEqual('url_3', items[2][0][0].get('refuri'))
+        self.assertEqual(1, len(items[2][0][0]))
+        self.assertEqual('title', items[2][0][0].astext())
 
         # images:
         #   * ![alttxt](http://x.com/)
@@ -200,15 +220,15 @@ class TestSphinxcontrib(unittest.TestCase):
         items = images[1]
         self.assertEqual(2, len(items))
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.image)
-        self.assertEqual('http://x.com/', items[0][0].get('uri'))
-        self.assertEqual('alttxt', items[0][0].get('alt'))
-        self.assertEqual(0, len(items[0][0]))
-        self.assertEqual(1, len(items[1]))
-        self.assertIsInstance(items[1][0], nodes.image)
-        self.assertEqual('http://x.com/', items[1][0].get('uri'))
-        self.assertEqual('alttxt', items[1][0].get('alt'))
-        self.assertEqual(0, len(items[1][0]))
+        self.assertIsInstance(items[0][0][0], nodes.image)
+        self.assertEqual('http://x.com/', items[0][0][0].get('uri'))
+        self.assertEqual('alttxt', items[0][0][0].get('alt'))
+        self.assertEqual(0, len(items[0][0][0]))
+        self.assertEqual(1, len(items[1][0]))
+        self.assertIsInstance(items[1][0][0], nodes.image)
+        self.assertEqual('http://x.com/', items[1][0][0].get('uri'))
+        self.assertEqual('alttxt', items[1][0][0].get('alt'))
+        self.assertEqual(0, len(items[1][0][0]))
 
         # references:
         #   * [Google][3]
@@ -218,20 +238,20 @@ class TestSphinxcontrib(unittest.TestCase):
         items = links[1]
         self.assertEqual(2, len(items))
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.reference)
-        self.assertEqual('http://www.google.com/', items[0][0].get('refuri'))
-        self.assertEqual(1, len(items[0][0]))
-        self.assertEqual('Google', items[0][0].astext())
-        self.assertEqual(1, len(items[1]))
-        self.assertIsInstance(items[1][0], nodes.reference)
-        self.assertEqual('http://sphinx-doc.org/', items[1][0].get('refuri'))
+        self.assertIsInstance(items[0][0][0], nodes.reference)
+        self.assertEqual('http://www.google.com/', items[0][0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0][0]))
+        self.assertEqual('Google', items[0][0][0].astext())
         self.assertEqual(1, len(items[1][0]))
-        self.assertEqual('Sphinx', items[1][0].astext())
+        self.assertIsInstance(items[1][0][0], nodes.reference)
+        self.assertEqual('http://sphinx-doc.org/', items[1][0][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0][0]))
+        self.assertEqual('Sphinx', items[1][0][0].astext())
 
         # image reference: ![alt text][2]
-        imageref = doc[0][1][3]
+        imageref = doc[0][1][3][0]
         self.assertEqual(2, len(imageref))
-        self.assertEqual('image reference: ', imageref[0])
+        self.assertEqual('image reference: ', imageref[0].astext())
         self.assertIsInstance(imageref[1], nodes.image)
         self.assertEqual('/path/to/image.png', imageref[1].get('uri'))
         self.assertEqual('alt text', imageref[1].get('alt'))
@@ -244,15 +264,15 @@ class TestSphinxcontrib(unittest.TestCase):
         items = links[1]
         self.assertEqual(2, len(items))
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.reference)
-        self.assertEqual('http://www.123.com', items[0][0].get('refuri'))
-        self.assertEqual(1, len(items[0][0]))
-        self.assertEqual('http://www.123.com', items[0][0].astext())
-        self.assertEqual(1, len(items[1]))
-        self.assertIsInstance(items[1][0], nodes.reference)
-        self.assertEqual('mailto:me@example.com', items[1][0].get('refuri'))
+        self.assertIsInstance(items[0][0][0], nodes.reference)
+        self.assertEqual('http://www.123.com', items[0][0][0].get('refuri'))
+        self.assertEqual(1, len(items[0][0][0]))
+        self.assertEqual('http://www.123.com', items[0][0][0].astext())
         self.assertEqual(1, len(items[1][0]))
-        self.assertEqual('me@example.com', items[1][0].astext())
+        self.assertIsInstance(items[1][0][0], nodes.reference)
+        self.assertEqual('mailto:me@example.com', items[1][0][0].get('refuri'))
+        self.assertEqual(1, len(items[1][0][0]))
+        self.assertEqual('me@example.com', items[1][0][0].astext())
 
     def test_html(self):
         markdown = u"""
@@ -285,21 +305,21 @@ class TestSphinxcontrib(unittest.TestCase):
         #   * &nbsp;
         #   * &#9999;
         entities = doc[0][1][0]
-        self.assertEqual('HTML Entities:', entities[0])
+        self.assertEqual('HTML Entities:', entities[0].astext())
         items = entities[1]
         self.assertEqual(6, len(items))
-        self.assertEqual('&amp;', items[0][0])
-        self.assertEqual('&quot;', items[1][0])
-        self.assertEqual('&lt;', items[2][0])
-        self.assertEqual('&gt;', items[3][0])
-        self.assertEqual('&nbsp;', items[4][0])
-        self.assertEqual('&#9999;', items[5][0])
+        self.assertEqual('&amp;', items[0].astext())
+        self.assertEqual('&quot;', items[1].astext())
+        self.assertEqual('&lt;', items[2].astext())
+        self.assertEqual('&gt;', items[3].astext())
+        self.assertEqual('&nbsp;', items[4].astext())
+        self.assertEqual('&#9999;', items[5].astext())
 
         # inline HTML:
         #   * <span>hello world</span>
         #   * hello <em>Sphinx</em> world
         inline_html = doc[0][1][1]
-        self.assertEqual('inline HTML:', inline_html[0])
+        self.assertEqual('inline HTML:', inline_html[0].astext())
         items = inline_html[1]
         self.assertEqual(2, len(items))
         self.assertIsInstance(items[0][0], nodes.raw)
@@ -428,8 +448,10 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual(3, len(items))
         self.assertIsInstance(items[0], nodes.list_item)
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.Text)
-        self.assertEqual('Item 1', items[0][0])
+        self.assertIsInstance(items[0][0], nodes.paragraph)
+        self.assertEqual(1, len(items[0][0]))
+        self.assertIsInstance(items[0][0][0], nodes.Text)
+        self.assertEqual('Item 1', items[0][0][0])
         self.assertIsInstance(items[1], nodes.list_item)
         self.assertEqual('Item 2', items[1].astext())
         self.assertIsInstance(items[2], nodes.list_item)
@@ -488,8 +510,10 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual(3, len(items))
         self.assertIsInstance(items[0], nodes.list_item)
         self.assertEqual(1, len(items[0]))
-        self.assertIsInstance(items[0][0], nodes.Text)
-        self.assertEqual('Item 1', items[0][0])
+        self.assertIsInstance(items[0][0], nodes.paragraph)
+        self.assertEqual(1, len(items[0][0]))
+        self.assertIsInstance(items[0][0][0], nodes.Text)
+        self.assertEqual('Item 1', items[0][0][0])
         self.assertIsInstance(items[1], nodes.list_item)
         self.assertEqual('Item 2', items[1].astext())
         self.assertIsInstance(items[2], nodes.list_item)

@@ -15,6 +15,16 @@ except ImportError:
 
 MAILTO = ('\x02amp\x03#109;\x02amp\x03#97;\x02amp\x03#105;\x02amp\x03#108;'
           '\x02amp\x03#116;\x02amp\x03#111;\x02amp\x03#58;\x02')
+INLINE_NODES = (
+    nodes.emphasis,
+    nodes.strong,
+    nodes.literal,
+    nodes.reference,
+    nodes.image,
+)
+HAVING_BLOCK_NODE = (
+    nodes.list_item,
+)
 
 
 class SectionPostprocessor(object):
@@ -89,18 +99,34 @@ class Serializer(object):
 
     def make_node(self, cls, element):
         node = cls()
+        having_block_node = cls in HAVING_BLOCK_NODE
         if element.text and element.text != "\n":
             text = self.unescape_char(element.text)
             if HTML_PLACEHOLDER_RE.search(text):
                 node += nodes.raw(format='html', text=self.unescape_char(text, rawHtml=True))
+            elif having_block_node:
+                node += nodes.paragraph(text=text)
             else:
                 node += nodes.Text(text)
         for child in element:
-            node += self.visit(child)
+            subnode = self.visit(child)
+            if having_block_node and isinstance(subnode, INLINE_NODES):
+                all_nodes_is_in_paragraph = True
+                if len(node) == 0:
+                    node += nodes.paragraph()
+                node[0] += subnode
+            else:
+                all_nodes_is_in_paragraph = False
+                node += subnode
+
             if child.tail and child.tail != "\n":
                 tail = self.unescape_char(child.tail)
                 if HTML_PLACEHOLDER_RE.search(tail):
                     node += nodes.raw(format='html', text=tail)
+                elif all_nodes_is_in_paragraph:
+                    node[0] += nodes.Text(tail)
+                elif having_block_node:
+                    node += nodes.paragraph(text=tail)
                 else:
                     node += nodes.Text(tail)
 
