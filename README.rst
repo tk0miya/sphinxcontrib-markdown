@@ -2,6 +2,15 @@ sphinxcontrib-markdown
 ======================
 Yet another markdown processor for Sphinx
 
+.. image:: https://travis-ci.org/tk0miya/sphinxcontrib-markdown.svg?branch=master
+   :target: https://travis-ci.org/tk0miya/sphinxcontrib-markdown
+
+.. image:: https://coveralls.io/repos/tk0miya/sphinxcontrib-markdown/badge.png?branch=master
+   :target: https://coveralls.io/r/tk0miya/sphinxcontrib-markdown?branch=master
+
+.. image:: https://codeclimate.com/github/tk0miya/sphinxcontrib-markdown/badges/gpa.svg
+   :target: https://codeclimate.com/github/tk0miya/sphinxcontrib-markdown
+
 Setting
 =======
 
