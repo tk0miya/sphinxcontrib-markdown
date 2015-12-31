@@ -181,6 +181,9 @@ class Serializer(object):
             image['alt'] = self.unescape_char(element.get('alt'))
         if element.get('src'):
             image['uri'] = self.unescape_char(element.get('src'))
+        if element.get('title'):
+            # FIXME: Sphinx does not process reftitle attribute
+            image['reftitle'] = self.unescape_char(element.get('title'))
         return image
 
     def visit_ul(self, element):

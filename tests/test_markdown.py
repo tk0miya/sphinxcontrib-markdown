@@ -172,7 +172,7 @@ class TestSphinxcontrib(unittest.TestCase):
             * [Google](url_3 "title")
         * images:
             * ![alttxt](http://x.com/)
-            * ![alttxt](<http://x.com/>)
+            * ![alttxt](http://x.com/ "title")
         * references:
             * [Google][3]
             * [Sphinx]
@@ -230,6 +230,7 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(items[1][0][0], nodes.image)
         self.assertEqual('http://x.com/', items[1][0][0].get('uri'))
         self.assertEqual('alttxt', items[1][0][0].get('alt'))
+        self.assertEqual('title', items[1][0][0].get('reftitle'))
         self.assertEqual(0, len(items[1][0][0]))
 
         # references:
