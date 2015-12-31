@@ -211,7 +211,8 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(items[2][0][0], nodes.reference)
         self.assertEqual('url_3', items[2][0][0].get('refuri'))
         self.assertEqual(1, len(items[2][0][0]))
-        self.assertEqual('title', items[2][0][0].astext())
+        self.assertEqual('Google', items[2][0][0].astext())
+        self.assertEqual('title', items[2][0][0].get('reftitle'))
 
         # images:
         #   * ![alttxt](http://x.com/)

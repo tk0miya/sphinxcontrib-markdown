@@ -172,8 +172,7 @@ class Serializer(object):
             else:
                 refnode['refuri'] = href
         if element.get('title'):
-            refnode.pop(0)
-            refnode.insert(0, nodes.Text(self.unescape_char(element.get('title'))))
+            refnode['reftitle'] = self.unescape_char(element.get('title'))
         return refnode
 
     def visit_img(self, element):
