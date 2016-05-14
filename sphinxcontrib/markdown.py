@@ -193,7 +193,12 @@ class Serializer(object):
         return self.make_node(nodes.enumerated_list, element)
 
     def visit_li(self, element):
-        return self.make_node(nodes.list_item, element)
+        li = nodes.list_item()
+        for child in element:
+            li += self.visit(child)
+        if element.text:
+            li.insert(0, nodes.Text(element.text))
+        return li
 
     def visit_pre(self, element):
         return nodes.literal_block(text=self.unescape_char(element[0].text))

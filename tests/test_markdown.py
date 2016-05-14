@@ -493,6 +493,36 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertIsInstance(subitems[1][1], nodes.bullet_list)
         self.assertEqual('Item 1-2-1', subitems[1][1][0].astext())
 
+    def test_bullet_list_having_content(self):
+        markdown = u"""
+        # Headings
+
+        * Item 1
+            Hello world
+
+            Lorem ipsum dolor sit amet ...
+
+        * Item 2
+          continues following line
+        * Item 3
+        """
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual('Headings', doc[0][0].astext())
+
+        items = doc[0][1]
+        print items
+        self.assertIsInstance(items, nodes.bullet_list)
+        self.assertEqual(3, len(items))
+        self.assertEqual(2, len(items[0]))
+        self.assertEqual('Item 1', items[0][0].astext())
+        self.assertEqual('Hello world', items[0][1].astext())
+        self.assertEqual('Item 2', items[1].astext())
+        self.assertEqual('Item 3', items[2].astext())
+
     def test_ol(self):
         markdown = u"""
         # Headings
