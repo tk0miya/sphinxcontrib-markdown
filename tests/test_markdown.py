@@ -332,6 +332,22 @@ class TestSphinxcontrib(unittest.TestCase):
         self.assertEqual('html', items[1][0]['format'])
         self.assertEqual('hello <em>Sphinx</em> world', items[1][0][0])
 
+    def test_linebreak(self):
+        markdown = ("# Headings\n"
+                    "\n"
+                    "hello  \n"
+                    "world  \n")
+        doc = md2node(dedent(markdown))
+        self.assertIsInstance(doc, nodes.container)
+        self.assertEqual(1, len(doc))
+        self.assertIsInstance(doc[0], nodes.section)
+        self.assertEqual(2, len(doc[0]))
+        self.assertEqual('Headings', doc[0][0].astext())
+        self.assertEqual(3, len(doc[0][1]))
+        self.assertEqual("hello", doc[0][1][0])
+        self.assertEqual("", doc[0][1][1])
+        self.assertEqual("world", doc[0][1][2])
+
     def test_multiple_sections(self):
         markdown = u"""
         # Headings 1

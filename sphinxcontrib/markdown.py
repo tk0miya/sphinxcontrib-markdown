@@ -201,6 +201,9 @@ class Serializer(object):
     def visit_blockquote(self, element):
         return self.make_node(nodes.literal_block, element)
 
+    def visit_br(self, element):
+        return nodes.Text('')
+
 
 def md2node(text):
     md = Markdown()
